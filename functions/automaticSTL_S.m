@@ -1,35 +1,31 @@
-classdef automaticSTL
+classdef automaticSTL_S
     %automaticSTL Automatic slt file generator for blade trap model.
     
     properties
-        vcoord % Coordinates of all vertices
-        v2f % Association from vertex indices to face indices
-        f2v % Association from face indices to vertex indices
-        f2n % Normal of all faces
-        cuboid % Size of the overall cuboid, [x_max, y_max, z_max; x_min, y_min z_min]
-        cuboidf % Faces belong to the cuboid, not to the electrodes
-        electrodes % Cell array of electrode instances
-        bladesx % Cell array which containcs face indices belonging to each electrode and blade
+        vcoord
+        v2f
+        f2v
+        f2n
+        cuboid
+        cuboidf
+        electrodes
+        bladesx
         tol = 1e-5
-        r0
-        x
-        y
+        r0 
+        x 
+        y 
         cntrcap
         midcap
-        gap
+        gap 
         bladeangle = 30
         bladeversion
         current = fullfile(getenv('TRAPSIMU'),'stl');
     end
     
     methods
-        function obj = automaticSTL(varargin)
+        function obj = automaticSTL_S()
             %automaticSTL Construct an instance of this class
-            p = inputParser;
-            addOptional(p,'stl_id',1,@(x) validateattributes(x,{'numeric'},{'scalar'},mfilename,'stl_id',1));
-            parse(p,varargin{:});
-            stlnames = {'cut_r205c250m250g20x5.0y3.0b4.1_txt_onshape.stl', 'cut_r205c250m250g20x2.0y1.2b4.1_txt_onshape.stl'};
-            stlname = stlnames{p.Results.stl_id};
+            stlname = 'cut_r205c250m250g20x2.0y1.2b4.1_txt_onshape.stl';
             expression = 'r(?<r0>[\d.]+)c(?<cntrcap>[\d.]+)m(?<midcap>[\d.]+)g(?<gap>[\d.]+)x(?<x>[\d.]+)y(?<y>[\d.]+)b(?<bladeversion>[\d.]+)';
             tokenNames = regexp(stlname,expression,'names');
             obj.r0 = str2double(tokenNames.r0)/1000;
@@ -39,7 +35,6 @@ classdef automaticSTL
             obj.x = str2double(tokenNames.x);
             obj.y = str2double(tokenNames.y);
             obj.bladeversion = tokenNames.bladeversion;
-            
             [obj.vcoord,obj.v2f,obj.f2v,obj.f2n] = StlTxtRead(fullfile(getenv('TRAPSIMU'),"stl",stlname));
             [obj.cuboid,obj.bladesx,obj.cuboidf] =  findfacenameAll(fullfile(obj.current,stlname));
             obj = obj.Symmetrize();
@@ -67,38 +62,37 @@ classdef automaticSTL
             addParameter(p,'x',obj.x,@(x) validateattributes(x,{'numeric'},{'scalar'},'NewStl','x'));
             addParameter(p,'y',obj.y,@(x) validateattributes(x,{'numeric'},{'scalar'},'NewStl','y'));
             parse(p,varargin{:});
-            
-            hs = cell(1,6);
+                       hs = cell(1,6);
             order = zeros(1,6);
             
-            if p.Results.r0 ~= obj.r0
-                hs{1} = @(obj)Modify_R0(obj,p.Results.r0);
-                order(1) = p.Results.r0 < obj.r0;
-            end
             if p.Results.x~=obj.x
-                hs{2} = @(obj)Modify_X(obj,p.Results.x);
-                order(2) = p.Results.x < obj.x;
-                %                 obj = obj.Modify_X(p.Results.x);
+                hs{1} = @(obj)Modify_X(obj,p.Results.x);
+                order(1) = p.Results.x < obj.x;
+%                 obj = obj.Modify_X(p.Results.x);
             end
             
             if p.Results.y~=obj.y
-                hs{3} = @(obj)Modify_Y(obj,p.Results.y);
-                order(3) = p.Results.y > obj.y;
-                %                 obj = obj.Modify_Y(p.Results.y);
+                hs{2} = @(obj)Modify_Y(obj,p.Results.y);
+                order(2) = p.Results.y > obj.y;
+%                 obj = obj.Modify_Y(p.Results.y);
             end
             
             if p.Results.gap~=obj.gap
-                hs{4} = @(obj)Modify_Gap(obj,p.Results.gap);
-                order(4) = p.Results.gap > obj.gap;
+                hs{3} = @(obj)Modify_Gap(obj,p.Results.gap);
+                order(3) = p.Results.gap > obj.gap;
             end
             
             if p.Results.midcap~=obj.midcap
-                hs{5} = @(obj)Modify_Midcap(obj,p.Results.midcap);
-                order(5) = p.Results.midcap>obj.midcap;
+                hs{4} = @(obj)Modify_Midcap(obj,p.Results.midcap);
+                order(4) = p.Results.midcap>obj.midcap;
             end
             if p.Results.cntrcap~=obj.cntrcap
-                hs{6} = @(obj)Modify_Cntrcap(obj,p.Results.cntrcap);
-                order(6) = p.Results.cntrcap>obj.cntrcap;
+                hs{5} = @(obj)Modify_Cntrcap(obj,p.Results.cntrcap);
+                order(5) = p.Results.cntrcap>obj.cntrcap;
+            end
+            if p.Results.r0 ~= obj.r0
+                hs{6} = @(obj)Modify_R0(obj,p.Results.r0);
+                order(6) = p.Results.r0 < obj.r0;
             end
             [~,id] = sort(order);
             hs = hs(id);
@@ -233,14 +227,14 @@ classdef automaticSTL
         
         function obj = Modify_Y(obj,y)
             move = [0,(obj.y-y)/2,(obj.y-y)/2*tan(obj.bladeangle/180*pi)];
-            %             for l = 1:length(obj.electrodes{1,1,1}.out_v)
-            %                 new_coord = reshape(automaticSTL_math.Calc_Point(...
-            %                     [automaticSTL_math.Move_Face(obj.electrodes{1,1,1}.out_v{l}.outsurf_paras,move.*[0,sign(1.5-1),sign(1.5-1)]); ...
-            %                     obj.electrodes{1,1,1}.out_v{l}.insurf_paras]),1,3);
-            %                 if abs(new_coord(1))>obj.cuboid(1,1)+obj.tol
-            %                     obj = obj.Modify_X(2*abs(new_coord(1))+0.1);
-            %                 end
-            %             end
+%             for l = 1:length(obj.electrodes{1,1,1}.out_v)
+%                 new_coord = reshape(automaticSTL_math.Calc_Point(...
+%                     [automaticSTL_math.Move_Face(obj.electrodes{1,1,1}.out_v{l}.outsurf_paras,move.*[0,sign(1.5-1),sign(1.5-1)]); ...
+%                     obj.electrodes{1,1,1}.out_v{l}.insurf_paras]),1,3);
+%                 if abs(new_coord(1))>obj.cuboid(1,1)+obj.tol
+%                     obj = obj.Modify_X(2*abs(new_coord(1))+0.1);
+%                 end
+%             end
             for i = 1:2
                 for j = 1:2
                     for k = 1:5
@@ -248,7 +242,7 @@ classdef automaticSTL
                             obj.vcoord(obj.electrodes{i,j,k}.out_v{l}.vertice,:) = ...
                                 reshape(automaticSTL_math.Calc_Point(...
                                 [automaticSTL_math.Move_Face(obj.electrodes{i,j,k}.out_v{l}.outsurf_paras,move.*[0,sign(1.5-j),sign(1.5-i)]); ...
-                                obj.electrodes{i,j,k}.out_v{l}.insurf_paras]),1,3);
+                                obj.electrodes{i,j,k}.out_v{l}.insurf_paras]),1,3);  
                         end
                     end
                 end
