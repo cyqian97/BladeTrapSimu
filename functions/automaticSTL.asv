@@ -25,20 +25,11 @@ classdef automaticSTL
     methods
         function obj = automaticSTL(varargin)
             %automaticSTL Construct an instance of this class
-            
-            % stl_id selects the original stl which we modify. It should be
-            % 1 or 2, and the default value is 1.
             p = inputParser;
-            addOptional(p,'stl_id',1,@(x) validateattributes(x,{'numeric'},{'scalar'},mfilename,'stl_id',1)); 
+            addOptional(p,'stl_id',1,@(x) validateattributes(x,{'numeric'},{'scalar'},mfilename,'stl_id',1)); % stl_id selects the original stl which we modify, equals to default value = 1.
             parse(p,varargin{:});
-            if p.Results.stl_id~=1 && p.Results.stl_id~=2
-                error("stl_id should be 1 or 2, but the current value is %d",p.Results.stl_id);
-            end
             stlnames = {'cut_r205c250m250g20x5.0y3.0b4.1_txt_onshape.stl', 'cut_r205c250m250g20x2.0y1.2b4.1_txt_onshape.stl'};
             stlname = stlnames{p.Results.stl_id};
-            
-            % Use regular expression to get the parameters from the name of
-            % the stl file.
             expression = 'r(?<r0>[\d.]+)c(?<cntrcap>[\d.]+)m(?<midcap>[\d.]+)g(?<gap>[\d.]+)x(?<x>[\d.]+)y(?<y>[\d.]+)b(?<bladeversion>[\d.]+)';
             tokenNames = regexp(stlname,expression,'names');
             obj.r0 = str2double(tokenNames.r0)/1000;
@@ -48,7 +39,6 @@ classdef automaticSTL
             obj.x = str2double(tokenNames.x);
             obj.y = str2double(tokenNames.y);
             obj.bladeversion = tokenNames.bladeversion;
-            
             
             [obj.vcoord,obj.v2f,obj.f2v,obj.f2n] = StlTxtRead(fullfile(cd(),"stl",stlname));
             [obj.cuboid,obj.bladesx,obj.cuboidf] =  findfacenameAll(fullfile(obj.current,stlname));

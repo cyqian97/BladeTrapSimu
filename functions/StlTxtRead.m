@@ -1,4 +1,13 @@
 function [vertices,v2f,f2v,f2n] = StlTxtRead(stlname)
+%[vertices,v2f,f2v,f2n] = StlTxtRead(stlname)
+%   StlTxtRead reads the text version slt files, and generate the
+%   relastionship table between vertices, faces and normals.
+%   == Output ==
+%   vertices : The coordiantes of each vertices.
+%   v2f : Vertices to faces. v2f{vertex_id} gives the ids of all the faces
+%   connected to this vertex.
+%   f2v : Faces to vertices.
+%   f2n : Faces to normals.
 
 fid = fopen(stlname,'r');
 vertices = [];
