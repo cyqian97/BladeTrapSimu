@@ -51,7 +51,7 @@ classdef automaticSTL
             
             
             [obj.vcoord,obj.v2f,obj.f2v,obj.f2n] = StlTxtRead(fullfile(cd(),"stl",stlname));
-            [obj.cuboid,obj.bladesx,obj.cuboidf] =  findfacenameAll(fullfile(obj.current,stlname));
+            [obj.cuboid,obj.bladesx,obj.cuboidf] =  findfacenameAll(fullfile(cd(),"stl",stlname));
             obj = obj.Symmetrize();
             obj.electrodes = cell(2,2,5);% (z,y,x). indices = 1, coordinates = min
             obj = ElectrodeGen(obj);
@@ -85,7 +85,7 @@ classdef automaticSTL
                 hs{1} = @(obj)Modify_R0(obj,p.Results.r0);
                 order(1) = p.Results.r0 < obj.r0;
             end
-            if p.Results.x~=obj.x
+            if p.Results.x ~=obj.x
                 hs{2} = @(obj)Modify_X(obj,p.Results.x);
                 order(2) = p.Results.x < obj.x;
                 %                 obj = obj.Modify_X(p.Results.x);

@@ -35,8 +35,8 @@ classdef automaticSTL_S
             obj.x = str2double(tokenNames.x);
             obj.y = str2double(tokenNames.y);
             obj.bladeversion = tokenNames.bladeversion;
-            [obj.vcoord,obj.v2f,obj.f2v,obj.f2n] = StlTxtRead(fullfile(getenv('TRAPSIMU'),"stl",stlname));
-            [obj.cuboid,obj.bladesx,obj.cuboidf] =  findfacenameAll(fullfile(obj.current,stlname));
+            [obj.vcoord,obj.v2f,obj.f2v,obj.f2n] = StlTxtRead(fullfile(cd(),"stl",stlname));
+            [obj.cuboid,obj.bladesx,obj.cuboidf] =  findfacenameAll(fullfile(cd(),"stl",stlname));
             obj = obj.Symmetrize();
             obj.electrodes = cell(2,2,5);% (z,y,x). indices = 1, coordinates = min
             obj = ElectrodeGen(obj);

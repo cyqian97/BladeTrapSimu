@@ -79,36 +79,3 @@ end
 cmp = [y-tol<x,x<y+tol];
 r = all(cmp(:));
 end
-% % Find the vertices number of the corner of the overall cuboid
-% %    8----7
-% %   /|   /|
-% %  / 4  / 3
-% % 5----6 /   z y
-% % |/   |/    |/
-% % 1----2     --x
-% cuboid = [2,4,2];
-% corners = zeros(8,1);
-% tol = 1e-8;
-% for i = 1:NumVertices
-%     coord = vertices(i,:);
-%     if eqtol(coord,[0,0,0],tol)
-%         corners(1) = i;
-%     elseif eqtol(coord,[cuboid(1),0,0],tol)
-%         corners(2) = i;
-%     elseif eqtol(coord,[cuboid(1),cuboid(2),0],tol)
-%         corners(3) = i;
-%     elseif eqtol(coord,[0,cuboid(2),0],tol)
-%         corners(4) = i;
-%     elseif eqtol(coord,[0,0,cuboid(3)],tol)
-%         corners(5) = i;
-%     elseif eqtol(coord,[cuboid(1),0,cuboid(3)],tol)
-%         corners(6) = i;
-%     elseif eqtol(coord,[cuboid(1),cuboid(2),cuboid(3)],tol)
-%         corners(7) = i;
-%     elseif eqtol(coord,[0,cuboid(2),cuboid(3)],tol)
-%         corners(8) = i;
-%     end
-% end
-% if any(corners==0)
-%     error("All corners are not found.");
-% end
